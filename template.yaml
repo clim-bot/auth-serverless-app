@@ -1,0 +1,113 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: AWS SAM Template for auth-serverless-app
+
+Globals:
+  Function:
+    Timeout: 10
+    Environment:
+      Variables:
+        POSTGRES_HOST: !Ref PostgresHost
+        POSTGRES_DB: !Ref PostgresDB
+        POSTGRES_USER: !Ref PostgresUser
+        POSTGRES_PASSWORD: !Ref PostgresPassword
+
+Parameters:
+  PostgresHost:
+    Type: String
+    Description: The hostname of the PostgreSQL database.
+  PostgresDB:
+    Type: String
+    Description: The name of the PostgreSQL database.
+  PostgresUser:
+    Type: String
+    Description: The PostgreSQL database username.
+  PostgresPassword:
+    Type: String
+    Description: The PostgreSQL database password.
+
+
+Resources:
+  RegisterUserFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: src.handlers/register_user.lambda_handler
+      Runtime: python3.9
+      CodeUri: .
+      MemorySize: 128
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - AmazonRDSDataFullAccess
+      Events:
+        RegisterUserApi:
+          Type: Api
+          Properties:
+            Path: /register
+            Method: post
+
+  LoginUserFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: src.handlers/login_user.lambda_handler
+      Runtime: python3.9
+      CodeUri: .
+      MemorySize: 128
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - AmazonRDSDataFullAccess
+      Events:
+        LoginUserApi:
+          Type: Api
+          Properties:
+            Path: /login
+            Method: post
+
+  GetSingleUserFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: src.handlers/get_single_user.lambda_handler
+      Runtime: python3.9
+      CodeUri: .
+      MemorySize: 128
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - AmazonRDSDataFullAccess
+      Events:
+        GetSingleUserApi:
+          Type: Api
+          Properties:
+            Path: /user/{user_id}
+            Method: get
+
+  GetAllUsersFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: src.handlers/get_all_users.lambda_handler
+      Runtime: python3.9
+      CodeUri: .
+      MemorySize: 128
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - AmazonRDSDataFullAccess
+      Events:
+        GetAllUsersApi:
+          Type: Api
+          Properties:
+            Path: /users
+            Method: get
+
+  HealthCheckFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: src.handlers/health_check.lambda_handler
+      Runtime: python3.9
+      CodeUri: .
+      MemorySize: 128
+      Policies:
+        - AWSLambdaBasicExecutionRole
+      Events:
+        HealthCheckApi:
+          Type: Api
+          Properties:
+            Path: /health
+            Method: get
